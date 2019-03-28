@@ -13,7 +13,11 @@ export type Matcher = {
   addRoutes: (routes: Array<RouteConfig>) => void;
 };
 
-// 创建路由匹配对象
+// 创建路由匹配对象,参数：开发者的路由配置对象，VueRouter实例对象
+// 该方法由开发者的路由配置对象，创建路由列表，path路由映射表，name路由映射表
+// 返回有用match和addRoutes方法的对象：
+// addRouters方法作用为在路由列表，path路由映射表，name路由映射表中添加路由记录
+// match方法的作用是根据传进来的raw，当前的路径和重定向计算，匹配，返回一个路由对象
 export function createMatcher (
   routes: Array<RouteConfig>,
   router: VueRouter
@@ -27,7 +31,7 @@ export function createMatcher (
     createRouteMap(routes, pathList, pathMap, nameMap)
   }
 
-  // 路由匹配，根据传进来的raw和当前的路径计算出新的路径返回
+  // 路由匹配，根据传进来的raw location，当前的路由对象，重定向来源计算返回路由对象
   function match (
     raw: RawLocation,
     currentRoute?: Route,
@@ -43,6 +47,7 @@ export function createMatcher (
       if (process.env.NODE_ENV !== 'production') {
         warn(record, `Route with name '${name}' does not exist`)
       }
+      // 如果没有找到，返回一个空的路由对象
       if (!record) return _createRoute(null, location)
         // 处理参数
       const paramNames = record.regex.keys
@@ -163,7 +168,8 @@ export function createMatcher (
     return _createRoute(null, location)
   }
 
-  // 创建路由的方法
+  // 创建路由对象的方法
+  // 参数： 路由记录，URL，重定向来源
   function _createRoute (
     record: ?RouteRecord,
     location: Location,

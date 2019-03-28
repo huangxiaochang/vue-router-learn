@@ -5,6 +5,7 @@ import { stringifyQuery } from './query'
 
 const trailingSlashRE = /\/?$/
 
+// 根据路由记录对象，URL，重定向来源，路由实例对象信息生成一个路由对象返回
 export function createRoute (
   record: ?RouteRecord,
   location: Location,
