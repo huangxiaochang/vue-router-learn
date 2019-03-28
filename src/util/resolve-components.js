@@ -75,6 +75,7 @@ export function flatMapComponents (
 ): Array<?Function> {
   // 
   return flatten(matched.map(m => {
+    // 返回一个数组,数组的每一项为组件中定义的key作为fn参数执行的返回值
     return Object.keys(m.components).map(key => fn(
       m.components[key],
       m.instances[key],

@@ -124,22 +124,23 @@ export class History {
     // 获取路由钩子函数组成一个队列
     const queue: Array<?NavigationGuard> = [].concat(
       // in-component leave guards
-      // 在失活的组件里调用离开守卫
+      // 获取失活的组件里的离开守卫
       extractLeaveGuards(deactivated),
       // global before hooks
-      // 调用全局beforeEach
+      // 获取全局beforeEach
       this.router.beforeHooks,
       // in-component update hooks
-      // 在重用的组件中调用beforeRouteUdate
+      // 获取在重用的组件中的beforeRouteUdate
       extractUpdateHooks(updated),
       // in-config enter guards
-      // 在激活的路由配置组件中调用beforeEnTER
+      // 获取在激活的路由配置组件中的beforeEnter
       activated.map(m => m.beforeEnter),
       // async components解析异步路由组件
       resolveAsyncComponents(activated)
     )
 
     this.pending = route
+    // 迭代器，用于执行 queue 中的导航守卫钩子
     const iterator = (hook: NavigationGuard, next) => {
       if (this.pending !== route) {
         return abort()
@@ -174,6 +175,7 @@ export class History {
       }
     }
 
+    // 经典同步执行异步
     runQueue(queue, iterator, () => {
       const postEnterCbs = []
       const isValid = () => this.current === route
@@ -252,6 +254,7 @@ function resolveQueue (
   }
 }
 
+// 从records数组中提取各个阶段的守卫
 function extractGuards (
   records: Array<RouteRecord>,
   name: string,
@@ -280,6 +283,7 @@ function extractGuard (
   return def.options[key]
 }
 
+// 获取所有失活组件中定义的beforeRouteLeave钩子函数
 function extractLeaveGuards (deactivated: Array<RouteRecord>): Array<?Function> {
   return extractGuards(deactivated, 'beforeRouteLeave', bindGuard, true)
 }
@@ -288,6 +292,7 @@ function extractUpdateHooks (updated: Array<RouteRecord>): Array<?Function> {
   return extractGuards(updated, 'beforeRouteUpdate', bindGuard)
 }
 
+// 把路由钩子函数的执行上下文为Vue组件实例
 function bindGuard (guard: NavigationGuard, instance: ?_Vue): ?NavigationGuard {
   if (instance) {
     return function boundRouteGuard () {
