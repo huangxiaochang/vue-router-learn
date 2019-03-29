@@ -12,6 +12,7 @@ import {
   resolveAsyncComponents
 } from '../util/resolve-components'
 
+// 路由模式的基类，由hash，history，abstract模式继承
 export class History {
   router: Router;
   base: string;
@@ -46,6 +47,7 @@ export class History {
     this.cb = cb
   }
 
+  // 收集监听完成初始化导航的回调，会在完成初始化导航时，调用收集的回调
   onReady (cb: Function, errorCb: ?Function) {
     if (this.ready) {
       cb()
@@ -57,10 +59,12 @@ export class History {
     }
   }
 
+  // 收集监听路由导航过程中出错的回调，会在导航过程中出错时，调用回调
   onError (errorCb: Function) {
     this.errorCbs.push(errorCb)
   }
 
+  // 路由跳转
   transitionTo (location: RawLocation, onComplete?: Function, onAbort?: Function) {
     // 获取匹配的路由信息
     const route = this.router.match(location, this.current)
@@ -92,8 +96,10 @@ export class History {
     })
   }
 
+  // 路由确认
   confirmTransition (route: Route, onComplete: Function, onAbort?: Function) {
     const current = this.current
+    // 定义终止跳转的函数：有错误发生时，执行监听错误的回调，然后执行onAbort终止跳转的回调
     const abort = err => {
       if (isError(err)) {
         if (this.errorCbs.length) {
@@ -105,11 +111,15 @@ export class History {
       }
       onAbort && onAbort(err)
     }
+
+    // 如果是相同的路由，则终止跳转
+    // 相同路由：path，hash，query相同或者name, hash, query, params相同
     if (
       isSameRoute(route, current) &&
       // in the case the route map has been dynamically appended to
       route.matched.length === current.matched.length
     ) {
+      // 进行url的修改和历史记录管理
       this.ensureURL()
       return abort()
     }
@@ -198,6 +208,10 @@ export class History {
     })
   }
 
+  // 更新路由，会在确认路由跳转之后， 调用该方法来更新路由，更新：
+  // 设置当前路由为确认跳转的路由
+  // 执行监听路由更新的回调（即设置组件实例对象的_route属性为确认跳转的路由，触发视图更新）
+  // 执行全局afterEach路由钩子函数，传入参数：确认跳转的路由对象，之前的路由对象
   updateRoute (route: Route) {
     const prev = this.current
     this.current = route
@@ -208,6 +222,8 @@ export class History {
   }
 }
 
+// 规范化开发者配置的base：
+// 前面以'/'开头，不以'/'结尾,或者获取html中配置的base，否者默认'/'
 function normalizeBase (base: ?string): string {
   if (!base) {
     if (inBrowser) {

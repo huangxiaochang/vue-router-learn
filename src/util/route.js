@@ -75,6 +75,10 @@ function getFullPath (
   return (path || '/') + stringify(query) + hash
 }
 
+// 判断是否是相同的路由对象
+// 相同路由：
+// path，hash，query相同
+// 或者name, hash, query, params相同
 export function isSameRoute (a: Route, b: ?Route): boolean {
   if (b === START) {
     return a === b
@@ -98,6 +102,7 @@ export function isSameRoute (a: Route, b: ?Route): boolean {
   }
 }
 
+// 递归判断两个对象的值是否相等
 function isObjectEqual (a = {}, b = {}): boolean {
   // handle null value #1566
   if (!a || !b) return a === b

@@ -125,7 +125,8 @@ export default class VueRouter {
       )
     }
 
-    // 对组件_route属性进行赋值，触发组件渲染
+    // 添加监听，监听确认路由后在更新路由时执行该监听回调，
+    // 在回调中设置组件实例的_route为更新后的路由对象，触发视图更新
     history.listen(route => {
       this.apps.forEach((app) => {
         app._route = route

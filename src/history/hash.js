@@ -66,13 +66,16 @@ export class HashHistory extends History {
     window.history.go(n)
   }
 
+  // push：Boolean,代表是添加还是替换
   ensureURL (push?: boolean) {
     const current = this.current.fullPath
     if (getHash() !== current) {
+      // 修改地址栏的url
       push ? pushHash(current) : replaceHash(current)
     }
   }
 
+  // 获取当前url的path
   getCurrentLocation () {
     return getHash()
   }
@@ -97,6 +100,7 @@ function ensureSlash (): boolean {
   return false
 }
 
+// 获取url的hash，即#到后面的decodeURI编码
 export function getHash (): string {
   // We can't use window.location.hash here because it's not
   // consistent across browsers - Firefox will pre-decode it!
@@ -105,6 +109,7 @@ export function getHash (): string {
   return index === -1 ? '' : decodeURI(href.slice(index + 1))
 }
 
+// 通过路径，获取完整的url
 function getUrl (path) {
   const href = window.location.href
   const i = href.indexOf('#')
@@ -112,6 +117,8 @@ function getUrl (path) {
   return `${base}#${path}`
 }
 
+// 如果环境支持window.hsitory的pushState,使用pushState增加记录
+// 否则直接修改window.location.hash
 function pushHash (path) {
   if (supportsPushState) {
     pushState(getUrl(path))
@@ -120,6 +127,8 @@ function pushHash (path) {
   }
 }
 
+// 如果环境支持window.replaceState,使用replaceState替换记录
+// 否则直接window.location
 function replaceHash (path) {
   if (supportsPushState) {
     replaceState(getUrl(path))
