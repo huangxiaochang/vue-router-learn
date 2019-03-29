@@ -67,6 +67,7 @@ export class HashHistory extends History {
   }
 
   // push：Boolean,代表是添加还是替换
+  // this.current为当前的路由对象
   ensureURL (push?: boolean) {
     const current = this.current.fullPath
     if (getHash() !== current) {

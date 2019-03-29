@@ -156,9 +156,13 @@ export class History {
         return abort()
       }
       try {
+        // 执行路由钩子函数，参数： to, from, next
+        // next为一个函数，如果开发者不执行next,则不会执行下一个钩子函数
+        // 如果执行next函数，则根据传来不同的值，进行处理。to: any为next函数中的参数
         hook(route, current, (to: any) => {
           if (to === false || isError(to)) {
             // next(false) -> abort navigation, ensure current URL
+            // 如果传来的是false或者一个Error实例对象，则终止跳转
             this.ensureURL(true)
             abort(to)
           } else if (
@@ -177,6 +181,7 @@ export class History {
             }
           } else {
             // confirm transition and pass on the value
+            // 这里执行 next 也就是执行下面函数 runQueue 中的 step(index + 1)
             next(to)
           }
         })
@@ -186,11 +191,15 @@ export class History {
     }
 
     // 经典同步执行异步
+    // 在queue中的钩子函数，只要在任何一个钩子函数中不调用next或者终止跳转(next(fanse))
+    // 的时候，将会执行执行queue往下继续执行，即终止路由的跳转，因为只有执行完queue，
+    // 才会调用执行完毕的回调，才会在回调中执行路由的更新和组件的渲染
     runQueue(queue, iterator, () => {
       const postEnterCbs = []
       const isValid = () => this.current === route
       // wait until async components are resolved before
       // extracting in-component enter guards
+      // 等待异步组件加载完成，获取异步组件内的beforeRouteEnter和全局beforeResolve
       const enterGuards = extractEnterGuards(activated, postEnterCbs, isValid)
       const queue = enterGuards.concat(this.router.resolveHooks)
       runQueue(queue, iterator, () => {
