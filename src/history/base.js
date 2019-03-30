@@ -1,5 +1,18 @@
 /* @flow */
+/*
+  History基类的构造函数：
+    1.设置实例对象current为默认的开始路由实例对象
+    2.定义实例对象一些属性和方法：
+      readyCbs，readyErrorCbs，errorCbs：收集ready,error回调函数的数组
+      transitionTo，confirmTransition，updateRoute，listen，onReady实例方法
+    3.updateRoute方法的作用：
+      1.更新当前路由current
+      2.执行监听路由更新的回调
+      3.执行全局afterEach路由钩子函数
+    4.confirmTransition方法的作用：
+      1.
 
+ */
 import { _Vue } from '../install'
 import type Router from '../index'
 import { inBrowser } from '../util/dom'
@@ -64,7 +77,10 @@ export class History {
     this.errorCbs.push(errorCb)
   }
 
-  // 路由跳转
+  // 路由跳转：
+  // 1.调用路由实例对象router的match方法获取要跳转的路由对象
+  // 2.调用confirmTransition来进行跳转的确认，即执行各个路由钩子函数，由开发者进行确认。
+  // 
   transitionTo (location: RawLocation, onComplete?: Function, onAbort?: Function) {
     // 获取匹配的路由信息
     const route = this.router.match(location, this.current)
@@ -97,6 +113,18 @@ export class History {
   }
 
   // 路由确认
+  // 1.如果是相同的则不跳转
+  // 2.根据当前路由和要跳转的路由，解析出可复用，需要渲染，失活的组件
+  // 3.依次获取失活组件中的beforeRouteLeave，全局beforeEach，重用的组件中的beforeRouteUpdate
+  //    激活的路由配置组件中的beforeEnter, 定义解析异步路由组件钩子组成一个队列queue
+  // 4.使用runQueue函数依次执行队列中的钩子函数，执行的方法：
+  //    1.在钩子函数中传入一个next回调函数，然后判断开发者传进该函数的参数来确定是否执行下一个钩子函数
+  //    只有在开发执行了next回调，并且传进的参数不为false,Error实例对象,  '/str?', {path: '/str?'}
+  //    时才会继续执行下一个钩子函数。
+  //    2.只有执行完了queue中的钩子函数，才调用runQueue的回调
+  // 5.等待异步组件加载完成，获取异步组件内的beforeRouteEnter和全局beforeResolve组成queue队列
+  // 6.继续第4步操作
+  // 7.调用runQueue的回调，在回调中执行transitionTo的onComplete或者onAbort，代表着路由跳转确认完成
   confirmTransition (route: Route, onComplete: Function, onAbort?: Function) {
     const current = this.current
     // 定义终止跳转的函数：有错误发生时，执行监听错误的回调，然后执行onAbort终止跳转的回调
@@ -140,7 +168,7 @@ export class History {
       // 获取全局beforeEach
       this.router.beforeHooks,
       // in-component update hooks
-      // 获取在重用的组件中的beforeRouteUdate
+      // 获取在重用的组件中的beforeRouteUpdate
       extractUpdateHooks(updated),
       // in-config enter guards
       // 获取在激活的路由配置组件中的beforeEnter

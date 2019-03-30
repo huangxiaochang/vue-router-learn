@@ -1,4 +1,49 @@
 /* @flow */
+/*
+  VueRouter是Vue的一种插件，所以首先需要使用Vue.use()来注册该插件。
+  Vue.use()注册插件其实是把Vue作为第一个参数去调用插件的install方法
+  进行安装。
+  VueRouter实现的原理：
+    1.实现install方法来安装该插件：
+      安装：
+        1.只安装一次
+        2.把Vue赋值全局变量_Vue
+        3.向所有组件注入beforeCreate，destroyed生命周期钩子函数，目的是进行路由的初始化。
+          1.设置Vue组件实例_routerRoot属性指向该组件实例
+          2.设置Vue组件实例_router属性为路由实例对象router
+          3.调用路由实例对象router的init方法进行初始化
+          4.使用defineReactive方法把组件实例对象的_route设置成访问器属性，值为当前路由对象
+          5.调用registerInstance()函数注册实例
+        4.在Vue构造函数原型上定义$router,$route属性，让开发者在组件中能够访问路由实例和路由对象
+        5.注册全局组件router-view和router-link
+        6.定义路由钩子函数的合并策略。
+    所以路由实例会在组件beforeCreate的生命钩子函数中进行初始化。
+
+    2.new VueRouter(options)创建路由实例对象的原理：
+      1.定义实例对象的一些属性和方法：
+        matcher,history,init,beforeEach,beforeResolve,
+        afterEach, addRoutes, onReady, onError push, replace,go, back, forward, 
+        getMatchedComponents, resolve。
+      2.其中matcher属性对象有两个方法:match, addRoutes.
+        match: 根据传进来的location,当前路由对象，重定向来源信息返回匹配的路由对象.
+        addRoutes: 提供动态在路由列表，path/name路由映射表中添加路由记录对象.
+      3.history属性为根据options.mode创建的History(历史记录管理类)的子类实例对象。
+        History类的实现原理：
+        构造函数：传进来的参数：路由实例对象，options.base, hash模式另外有一个fallback参数。
+        创建实例对象：
+          1.
+
+    3.路由实例对象的初始化：
+      (new Vue({router})时会传进第二步创建的路由实例对象，会在new Vue 的beforeCreate的钩子
+       函数中调用路由实例对象的init方法进行路由的初始化)
+      1.如果router.app已经有值(默认为空),则在router.apps中添加组件实例对象vm.
+      2.否则设置router.app = vm, 然后调用history.transitionTo进行路由的跳转操作，
+        再调用history.listen添加路由监听。
+
+      从初始化过程可以看出，router.app保存的时候Vue的根实例对象，只有在创建Vue根实例对象的
+      beforeCreate钩子中进行history.transitionTo和history.listen。其他的子组件实例对象中的
+      beforeCreate钩子中只是把该子组件实例对象vm添加进router.apps中
+ */
 
 import { install } from './install'
 import { START } from './util/route'
@@ -16,7 +61,7 @@ import { AbstractHistory } from './history/abstract'
 import type { Matcher } from './create-matcher'
 
 // 根据开发者传来的路由配置信息，创建路由实例对象
-// 每个路由实例对象拥有matcher,init,beforeEach,beforeResolve,
+// 每个路由实例对象拥有matcher,history,init,beforeEach,beforeResolve,
 // afterEach, addRoutes, onReady, onError push, replace,go, back, forward, 
 // getMatchedComponents, resolve,等等属性和方法
 // 其中因为在install的时候，混入beforeCreate钩子函数，并在其中调用路由实例对象的init
