@@ -3,6 +3,7 @@
 import { _Vue } from '../install'
 import { warn, isError } from './warn'
 
+// 返回解析异步组件钩子函数的函数，该钩子函数会在queue队列中被调用
 export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
   return (to, from, next) => {
     let hasAsync = false
@@ -15,6 +16,8 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
       // we are not using Vue's default async resolving mechanism because
       // we want to halt the navigation until the incoming component has been
       // resolved.
+      // 如果它是一个函数并且没有cid属性的话，我们假定它是一个异步组件解析函数，
+      // 那么我们就不使用Vue默认的异步解析机制，因为我们希望暂停导航知道都有包含的组件解析完成
       if (typeof def === 'function' && def.cid === undefined) {
         hasAsync = true
         pending++
@@ -64,7 +67,8 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
         }
       }
     })
-
+    
+    // 如果不是异步组件的话，直接执行next()方法
     if (!hasAsync) next()
   }
 }
