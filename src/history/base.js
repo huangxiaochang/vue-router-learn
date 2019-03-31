@@ -10,8 +10,25 @@
       2.执行监听路由更新的回调
       3.执行全局afterEach路由钩子函数
     4.confirmTransition方法的作用：
-      1.
-
+      1.如果是相同的则不跳转
+      2.根据当前路由和要跳转的路由，解析出可复用，需要渲染，失活的组件
+      3.依次获取失活组件中的beforeRouteLeave，全局beforeEach，重用的组件中的beforeRouteUpdate
+        激活的路由配置组件中的beforeEnter, 定义解析异步路由组件钩子组成一个队列queue
+      4.使用runQueue函数依次执行队列中的钩子函数，执行的方法：
+        1.在钩子函数中传入一个next回调函数，然后判断开发者传进该函数的参数来确定是否执行下一个钩子函数
+        只有在开发执行了next回调，并且传进的参数不为false,Error实例对象,  '/str?', {path: '/str?'}
+        时才会继续执行下一个钩子函数。
+        2.只有执行完了queue中的钩子函数，才调用runQueue的回调
+      5.等待异步组件加载完成，获取异步组件内的beforeRouteEnter和全局beforeResolve组成queue队列
+      6.继续第4步操作
+      7.调用runQueue的回调，在回调中执行transitionTo的onComplete或者onAbort，代表着路由跳转确认完成
+    5.transitionTo方法的作用：
+      1.调用路由实例对象router的match方法获取要跳转的路由对象
+      2.调用confirmTransition来进行跳转的确认，即执行各个路由钩子函数，由开发者进行确认。
+      3.如果开发不确认跳转，则会终止路由的跳转，只有开发者确认，全部执行钩子函数之后才进行跳转操作。
+      4.如果确认跳转，则更新当前路由信息和更新url。
+      5.对路由实例中apps里面收集的组件实例设置_route属性值为当前路由实例对象，（_route是存储器属性，会触发视图更新）
+      6.执行afterEach钩子
  */
 import { _Vue } from '../install'
 import type Router from '../index'
@@ -80,7 +97,10 @@ export class History {
   // 路由跳转：
   // 1.调用路由实例对象router的match方法获取要跳转的路由对象
   // 2.调用confirmTransition来进行跳转的确认，即执行各个路由钩子函数，由开发者进行确认。
-  // 
+  // 3.如果开发不确认跳转，则会终止路由的跳转，只有开发者确认，全部执行钩子函数之后才进行跳转操作。
+  // 4.如果确认跳转，则更新当前路由信息和更新url。
+  // 5.对路由实例中apps里面收集的组件实例设置_route属性值为当前路由实例对象，（_route是存储器属性，会触发视图更新）
+  // 6.执行afterEach钩子
   transitionTo (location: RawLocation, onComplete?: Function, onAbort?: Function) {
     // 获取匹配的路由信息
     const route = this.router.match(location, this.current)
@@ -96,6 +116,7 @@ export class History {
       this.ensureURL()
 
       // fire ready cbs once
+      // 监听ready的回调只执行一次
       if (!this.ready) {
         this.ready = true
         this.readyCbs.forEach(cb => { cb(route) })
@@ -322,9 +343,12 @@ function extractGuards (
         : bind(guard, instance, match, key)
     }
   })
+  // beforeRouteLeave钩子数组需要反转，因为离开的过程是从内层组件到外层组件离开，
+  // 而我们获取离开的组件时，是从外层到内层的，然后再使用flatten函数扁平化数组
   return flatten(reverse ? guards.reverse() : guards)
 }
 
+// 获取指定组件对应的key的值
 function extractGuard (
   def: Object | Function,
   key: string

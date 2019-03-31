@@ -7,13 +7,18 @@ import { getLocation } from './html5'
 import { setupScroll, handleScroll } from '../util/scroll'
 import { pushState, replaceState, supportsPushState } from '../util/push-state'
 
+// hash模式实例化：
+// 1.继承History类
+// 2.针对不支持history api进行降级处理，以及确保默认进入时对应的hash值是以/开头
 export class HashHistory extends History {
   constructor (router: Router, base: ?string, fallback: boolean) {
     super(router, base)
     // check history fallback deeplinking
+    // 如果是降级并且已经做了降级处理，则什么都不做
     if (fallback && checkFallback(this.base)) {
       return
     }
+    // 确保hash是以'/'开头
     ensureSlash()
   }
 
@@ -30,14 +35,17 @@ export class HashHistory extends History {
 
     window.addEventListener(supportsPushState ? 'popstate' : 'hashchange', () => {
       const current = this.current
+      // 如果不是以/开头，直接返回
       if (!ensureSlash()) {
         return
       }
+      // 调用transitionTo进行路由跳转
       this.transitionTo(getHash(), route => {
         if (supportsScroll) {
           handleScroll(this.router, route, current, true)
         }
         if (!supportsPushState) {
+          // 替换hash值
           replaceHash(route.fullPath)
         }
       })
@@ -76,15 +84,18 @@ export class HashHistory extends History {
     }
   }
 
-  // 获取当前url的path
+  // 获取当前url的hash
   getCurrentLocation () {
     return getHash()
   }
 }
 
+// 处理降级
 function checkFallback (base) {
+  // 得到去除base后的location
   const location = getLocation(base)
   if (!/^\/#/.test(location)) {
+    // 如果此时的地址不是以'/#'开发，需要做降级为hash模式下应有的/#开头
     window.location.replace(
       cleanPath(base + '/#' + location)
     )
@@ -92,6 +103,7 @@ function checkFallback (base) {
   }
 }
 
+// 确保hash是以'/'开头
 function ensureSlash (): boolean {
   const path = getHash()
   if (path.charAt(0) === '/') {
@@ -105,6 +117,8 @@ function ensureSlash (): boolean {
 export function getHash (): string {
   // We can't use window.location.hash here because it's not
   // consistent across browsers - Firefox will pre-decode it!
+  // 我们不直接使用window.location.hash开获取hash值，是因为浏览器兼容性的问题，
+  // 因为在Firefox浏览器上，会对hash值进行预编码
   const href = window.location.href
   const index = href.indexOf('#')
   return index === -1 ? '' : decodeURI(href.slice(index + 1))

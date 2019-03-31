@@ -24,6 +24,7 @@ export class HTML5History extends History {
 
       // Avoiding first `popstate` event dispatched in some browsers but first
       // history route not updated since async guard at the same time.
+      // 避免第一个popstate事件重复触发，因为第一个history路由还没有更新直到异步钩子执行完成
       const location = getLocation(this.base)
       if (this.current === START && location === initLocation) {
         return
@@ -71,6 +72,7 @@ export class HTML5History extends History {
   }
 }
 
+// 返回去除base后的location值
 export function getLocation (base: string): string {
   let path = decodeURI(window.location.pathname)
   if (base && path.indexOf(base) === 0) {

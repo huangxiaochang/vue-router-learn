@@ -85,11 +85,11 @@ function addRouteRecord (
   const record: RouteRecord = {
     path: normalizedPath,
     regex: compileRouteRegex(normalizedPath, pathToRegexpOptions),
-    components: route.components || { default: route.component },
+    components: route.components || { default: route.component }, // 命名视图组件：viewName: component
     instances: {},
     name,
-    parent,
-    matchAs,
+    parent, // 用于子路由,指向父级record
+    matchAs, // 用于路由别名，值为record.path或者/
     redirect: route.redirect,
     beforeEnter: route.beforeEnter,
     meta: route.meta || {},
@@ -179,7 +179,7 @@ function compileRouteRegex (path: string, pathToRegexpOptions: PathToRegexpOptio
   return regex
 }
 
-// 规范化路径path，如严格模式去掉路径最后的'/',子路径加上父路径
+// 规范化路径path，如严格模式去掉路径最后的'/',如果子路径不是以/开头，则加上父路径
 function normalizePath (path: string, parent?: RouteRecord, strict?: boolean): string {
   if (!strict) path = path.replace(/\/$/, '')
   if (path[0] === '/') return path

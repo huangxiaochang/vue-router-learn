@@ -80,6 +80,7 @@ export function flatMapComponents (
   // 
   return flatten(matched.map(m => {
     // 返回一个数组,数组的每一项为组件中定义的key作为fn参数执行的返回值
+    // 传入fn函数的参数：1.视图对应的组件类，2.路由记录对应的组件实例对象，3.路由记录，4.当前key值（路由对应的组件的key）
     return Object.keys(m.components).map(key => fn(
       m.components[key],
       m.instances[key],

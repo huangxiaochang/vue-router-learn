@@ -31,7 +31,10 @@
         History类的实现原理：
         构造函数：传进来的参数：路由实例对象，options.base, hash模式另外有一个fallback参数。
         创建实例对象：
-          1.
+          1.设置实例对象current为默认的开始路由实例对象
+          2.定义实例对象一些属性和方法：
+            readyCbs，readyErrorCbs，errorCbs：收集ready,error回调函数的数组
+            transitionTo，confirmTransition，updateRoute，listen，onReady实例方法
 
     3.路由实例对象的初始化：
       (new Vue({router})时会传进第二步创建的路由实例对象，会在new Vue 的beforeCreate的钩子

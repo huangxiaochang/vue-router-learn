@@ -20,6 +20,7 @@ export function normalizeLocation (
   }
 
   // relative params
+  // 如果不存在path属性并且有parmas并且有当前路由的话（即只改变当前路由的params）
   if (!next.path && next.params && current) {
     next = extend({}, next)
     next._normalized = true

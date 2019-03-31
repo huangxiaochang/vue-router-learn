@@ -38,6 +38,7 @@ export function createMatcher (
     redirectedFrom?: Location
   ): Route {
     // 序列化url，即获取url中hash，query，path，name
+    // 如果raw为有name属性的对象，直接不用处理
     const location = normalizeLocation(raw, currentRoute, false, router)
     const { name } = location
 
