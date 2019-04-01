@@ -192,7 +192,7 @@ export class History {
       // 获取在重用的组件中的beforeRouteUpdate
       extractUpdateHooks(updated),
       // in-config enter guards
-      // 获取在激活的路由配置组件中的beforeEnter
+      // 获取在激活的路由配置中的beforeEnter
       activated.map(m => m.beforeEnter),
       // async components解析异步路由组件
       resolveAsyncComponents(activated)
