@@ -18,12 +18,12 @@ export default {
       type: String,
       default: 'a'
     },
-    exact: Boolean,
-    append: Boolean,
-    replace: Boolean,
-    activeClass: String,
-    exactActiveClass: String,
-    event: {
+    exact: Boolean, // 是否精准匹配
+    append: Boolean, // 是否把路径追加到当前的路径
+    replace: Boolean, // 是否是替换当前路由
+    activeClass: String, // 激活的链接的类名
+    exactActiveClass: String, // 精准匹配激活的链接的类名
+    event: { // 可以用来触发导航的事件
       type: eventTypes,
       default: 'click'
     }
