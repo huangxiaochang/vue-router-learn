@@ -93,6 +93,7 @@ export default {
       class: classes
     }
 
+    // 在目标元素中绑定事件
     if (this.tag === 'a') {
       data.on = on
       data.attrs = { href }
@@ -144,6 +145,7 @@ function guardEvent (e) {
   return true
 }
 
+// 在子节点中找到第一个a元素节点返回
 function findAnchor (children) {
   if (children) {
     let child

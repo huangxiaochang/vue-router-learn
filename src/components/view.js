@@ -37,6 +37,7 @@ export default {
     // 收集了渲染函数订阅者，当执行完router.transitionTo 后，修改 app._route 的时候，
     // 又触发了setter, 所以渲染函数Watcher会执行更新，进行重新渲染
     const route = parent.$route
+    // 缓存
     const cache = parent._routerViewCache || (parent._routerViewCache = {})
 
     // determine current view depth, also check to see if the tree
@@ -49,6 +50,7 @@ export default {
       if (parent.$vnode && parent.$vnode.data.routerView) {
         depth++
       }
+      // 处理keep-alive组件
       if (parent._inactive) {
         inactive = true
       }
@@ -57,6 +59,7 @@ export default {
     data.routerViewDepth = depth
 
     // render previous view if the tree is inactive and kept-alive
+    // 缓存keep-alive渲染的组件
     if (inactive) {
       return h(cache[name], data, children)
     }
@@ -65,6 +68,7 @@ export default {
     const matched = route.matched[depth]
     // render empty node if no matched route
     if (!matched) {
+      // 如果没有找到，就渲染一个空节点
       cache[name] = null
       return h()
     }
@@ -77,7 +81,11 @@ export default {
     // 定义了一个注册路由实例的方法，该方法会在实例注入的beforeCreate钩子函数中被
     // 调用
     data.registerRouteInstance = (vm, val) => {
+      // val: vm/undefined
       // val could be undefined for unregistration
+      // val 为undefined的时候，为取消注册。会在destory钩子函数中调用registerInstance(this)没有传val
+      // 即val不为undefined时，为注册，否者为取消注册
+      // name为命名view的name ID
       const current = matched.instances[name]
       if (
         (val && current !== vm) ||
@@ -89,6 +97,7 @@ export default {
 
     // also register instance in prepatch hook
     // in case the same component instance is reused across different routes
+    // 在prepatch钩子中注册组件实例，目的，不同路由可能使用同一组件，便于组件的复用
     ;(data.hook || (data.hook = {})).prepatch = (_, vnode) => {
       matched.instances[name] = vnode.componentInstance
     }

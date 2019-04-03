@@ -86,7 +86,7 @@ function addRouteRecord (
     path: normalizedPath,
     regex: compileRouteRegex(normalizedPath, pathToRegexpOptions),
     components: route.components || { default: route.component }, // 命名视图组件：viewName: component
-    instances: {},
+    instances: {}, // 收集vm实例
     name,
     parent, // 用于子路由,指向父级record
     matchAs, // 用于路由别名，值为record.path或者/
