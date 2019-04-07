@@ -16,6 +16,10 @@
           5.调用registerInstance()函数注册实例
         4.在Vue构造函数原型上定义$router,$route属性，让开发者在组件中能够访问路由实例和路由对象
         5.注册全局组件router-view和router-link
+          1.router-view
+            根据当前路由对象中matched中的组件，使用render函数进行组件的渲染
+          2.router-link
+            本质的原理是监听节点相应的事件，然后使用router的push/replace来进行路由的跳转相关操作。
         6.定义路由钩子函数的合并策略。
     所以路由实例会在组件beforeCreate的生命钩子函数中进行初始化。
 
@@ -42,10 +46,7 @@
       1.如果router.app已经有值(默认为空),则在router.apps中添加组件实例对象vm.
       2.否则设置router.app = vm, 然后调用history.transitionTo进行路由的跳转操作，
         再调用history.listen添加路由监听。
-
-      从初始化过程可以看出，router.app保存的时候Vue的根实例对象，只有在创建Vue根实例对象的
-      beforeCreate钩子中进行history.transitionTo和history.listen。其他的子组件实例对象中的
-      beforeCreate钩子中只是把该子组件实例对象vm添加进router.apps中
+      3. 在当前路由记录对象的instance属性中该组件实例。
  */
 
 import { install } from './install'
@@ -281,6 +282,7 @@ export default class VueRouter {
 
 function registerHook (list: Array<any>, fn: Function): Function {
   list.push(fn)
+  // 返回一个函数用于注销注册的钩子函数
   return () => {
     const i = list.indexOf(fn)
     if (i > -1) list.splice(i, 1)

@@ -33,6 +33,7 @@ export function install (Vue) {
   Vue.mixin({
     beforeCreate () {
       if (isDef(this.$options.router)) {
+        // 只有在根Vue实例(new Vue())中才会执行,因为在只有在创建根实例时，才传进router
         this._routerRoot = this
         this._router = this.$options.router
         // 初始化路由
@@ -40,7 +41,7 @@ export function install (Vue) {
         // 设置响应式属性_route,实现组件渲染
         Vue.util.defineReactive(this, '_route', this._router.history.current)
       } else {
-        // 用于router-view层级判断
+        // 用于router-view层级判断, 对于子组件来说，_routerRoot指向的都是根实例对象vm
         this._routerRoot = (this.$parent && this.$parent._routerRoot) || this
       }
       // 注册路由实例
