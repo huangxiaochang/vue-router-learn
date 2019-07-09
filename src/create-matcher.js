@@ -26,7 +26,7 @@ export function createMatcher (
   const { pathList, pathMap, nameMap } = createRouteMap(routes)
 
   // 提供动态添加路由接口
-  // 把添加的路由配置添加进路由列表，path路由记录映射表，name路由记录映射表
+  // 把添加的路由配置添加进路由路径列表，path路由记录映射表，name路由记录映射表
   function addRoutes (routes) {
     createRouteMap(routes, pathList, pathMap, nameMap)
   }

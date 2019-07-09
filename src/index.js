@@ -90,7 +90,7 @@ export default class VueRouter {
   constructor (options: RouterOptions = {}) {
     this.app = null
     this.apps = []
-    this.options = options
+    this.options = options // 开发者的路由配置信息
     this.beforeHooks = []
     this.resolveHooks = []
     this.afterHooks = []

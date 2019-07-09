@@ -28,6 +28,7 @@ export function createRoute (
     query,
     params: location.params || {},
     fullPath: getFullPath(location, stringifyQuery),
+    // matched存储着当前路径匹配到的路由记录
     matched: record ? formatMatch(record) : []
   }
   if (redirectedFrom) {

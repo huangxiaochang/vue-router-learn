@@ -69,6 +69,7 @@ export function parsePath (path: string): {
   }
 }
 
+// 把path中的// -> /
 export function cleanPath (path: string): string {
   return path.replace(/\/\//g, '/')
 }

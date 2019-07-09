@@ -5,7 +5,7 @@ import { cleanPath } from './util/path'
 import { assert, warn } from './util/warn'
 
 // 主要进行路径的规范化
-// 创建路由记录列表
+// 创建路由路径记录列表
 // 创建路由path记录映射表
 // 创建路由name记录映射表
 export function createRouteMap (
@@ -19,10 +19,13 @@ export function createRouteMap (
   nameMap: Dictionary<RouteRecord>;
 } {
   // the path list is used to control path matching priority
+  // 设置一个路径列表用于控制路径匹配的优先级
   const pathList: Array<string> = oldPathList || []
   // $flow-disable-line
+  // 路由路径到路由记录的映射表
   const pathMap: Dictionary<RouteRecord> = oldPathMap || Object.create(null)
   // $flow-disable-line
+  // 路由名字到路由记录的映射表
   const nameMap: Dictionary<RouteRecord> = oldNameMap || Object.create(null)
 
   // 遍历路由配置，为每一个配置添加路由记录
@@ -93,6 +96,7 @@ function addRouteRecord (
     redirect: route.redirect,
     beforeEnter: route.beforeEnter,
     meta: route.meta || {},
+    // props的值可能为true/false, {}, function
     props: route.props == null
       ? {}
       : route.components

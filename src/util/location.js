@@ -7,14 +7,16 @@ import { fillParams } from './params'
 import { warn } from './warn'
 import { extend } from './misc'
 
+// 规范化路径
 export function normalizeLocation (
   raw: RawLocation,
   current: ?Route,
-  append: ?boolean,
+  append: ?boolean, // 在create-matcher传进false
   router: ?VueRouter
 ): Location {
   let next: Location = typeof raw === 'string' ? { path: raw } : raw
   // named target
+  // 命名路由，或者已经规范过的路由，直接返回
   if (next.name || next._normalized) {
     return next
   }
