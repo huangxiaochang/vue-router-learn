@@ -1,5 +1,6 @@
 /* @flow */
 
+// 定义执行队列的方法
 export function runQueue (queue: Array<?NavigationGuard>, fn: Function, cb: Function) {
   // 定义执行的步伐
   const step = index => {

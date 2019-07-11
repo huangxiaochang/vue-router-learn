@@ -132,8 +132,8 @@ function getUrl (path) {
   return `${base}#${path}`
 }
 
-// 如果环境支持window.hsitory的pushState,使用pushState增加记录
-// 否则直接修改window.location.hash
+// 如果环境支持window.hsitory的pushState,使用pushState增加历史记录
+// 否则直接修改window.location.hash来添加历史记录
 function pushHash (path) {
   if (supportsPushState) {
     pushState(getUrl(path))
@@ -142,8 +142,8 @@ function pushHash (path) {
   }
 }
 
-// 如果环境支持window.replaceState,使用replaceState替换记录
-// 否则直接window.location
+// 如果环境支持window.replaceState,使用replaceState替换历史记录
+// 否则直接window.location替换历史记录
 function replaceHash (path) {
   if (supportsPushState) {
     replaceState(getUrl(path))

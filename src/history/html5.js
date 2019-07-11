@@ -72,11 +72,13 @@ export class HTML5History extends History {
   }
 }
 
-// 返回去除base后的location值
+// 返回去除base后的location值，包扣hash和search部分
 export function getLocation (base: string): string {
+  // pathname: 当前url的路径部分，不包括search和hash,host等
   let path = decodeURI(window.location.pathname)
   if (base && path.indexOf(base) === 0) {
     path = path.slice(base.length)
   }
+  // search：?开始的url(查询部分),hash #开始的url(瞄)
   return (path || '/') + window.location.search + window.location.hash
 }

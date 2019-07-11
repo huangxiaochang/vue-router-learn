@@ -26,7 +26,7 @@
     2.new VueRouter(options)创建路由实例对象的原理：
       1.定义实例对象的一些属性和方法：
         matcher,history,init,beforeEach,beforeResolve,
-        afterEach, addRoutes, onReady, onError push, replace,go, back, forward, 
+        afterEach, addRoutes, onReady, onError push, replace,go, back, forward,
         getMatchedComponents, resolve。
       2.其中matcher属性对象有两个方法:match, addRoutes.
         match: 根据传进来的location,当前路由对象，重定向来源信息返回匹配的路由对象.
@@ -66,7 +66,7 @@ import type { Matcher } from './create-matcher'
 
 // 根据开发者传来的路由配置信息，创建路由实例对象
 // 每个路由实例对象拥有matcher,history,init,beforeEach,beforeResolve,
-// afterEach, addRoutes, onReady, onError push, replace,go, back, forward, 
+// afterEach, addRoutes, onReady, onError push, replace,go, back, forward,
 // getMatchedComponents, resolve,等等属性和方法
 // 其中因为在install的时候，混入beforeCreate钩子函数，并在其中调用路由实例对象的init
 // 方法，进行路由实例对象的初始化工作
@@ -153,6 +153,7 @@ export default class VueRouter {
     this.apps.push(app)
 
     // main app already initialized.
+    // 只在根vm中进行初始化
     if (this.app) {
       return
     }

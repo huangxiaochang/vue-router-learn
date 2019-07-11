@@ -15,7 +15,7 @@ const Unicode = { template: '<div>unicode</div>' }
 // 3. Create the router
 const router = new VueRouter({
   mode: 'history',
-  base: __dirname,
+  base: __dirname, // basic
   routes: [
     { path: '/', component: Home },
     { path: '/foo', component: Foo },

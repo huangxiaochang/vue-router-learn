@@ -41,7 +41,6 @@ export function createMatcher (
     // 如果raw为有name属性的对象，直接不用处理
     const location = normalizeLocation(raw, currentRoute, false, router)
     const { name } = location
-
     if (name) {
       // 如果是具名路由
       const record = nameMap[name]
@@ -50,7 +49,7 @@ export function createMatcher (
       }
       // 如果没有找到，返回一个空的路由对象
       if (!record) return _createRoute(null, location)
-        // 处理参数
+      // 处理参数
       const paramNames = record.regex.keys
         .filter(key => !key.optional)
         .map(key => key.name)

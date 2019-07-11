@@ -12,11 +12,12 @@ export let _Vue
     5.注册全局组件router-view和router-link
     6.定义路由钩子函数的合并策略
  */
+// install -> 'this' = plugin = VueRouter
 export function install (Vue) {
   // 确保只安装一次
   if (install.installed && _Vue === Vue) return
   install.installed = true
-  
+
   // 把Vue赋值给全局变量_Vue,这样可以在其他地方使用，并且不用再import，减少项目体积
   _Vue = Vue
 
@@ -25,6 +26,8 @@ export function install (Vue) {
   const registerInstance = (vm, callVal) => {
     let i = vm.$options._parentVnode
     if (isDef(i) && isDef(i = i.data) && isDef(i = i.registerRouteInstance)) {
+      // data.registerRouteInstance在router-view中定义，用于在匹配的路由记录中的instances属性中
+      // 注册和取消注册组件实例对象(router-view组件实例)。
       i(vm, callVal)
     }
   }
@@ -38,7 +41,8 @@ export function install (Vue) {
         this._router = this.$options.router
         // 初始化路由
         this._router.init(this)
-        // 设置响应式属性_route,实现组件渲染
+        // 设置响应式属性_route,会在确认路由跳转之后，重新设置_route，触发依赖，进行视图的更新
+        // (收集依赖是在router-view组件中访问_route属性的时候，收集了render watcher)
         Vue.util.defineReactive(this, '_route', this._router.history.current)
       } else {
         // 用于router-view层级判断, 对于子组件来说，_routerRoot指向的都是根实例对象vm
@@ -48,6 +52,7 @@ export function install (Vue) {
       registerInstance(this, this)
     },
     destroyed () {
+      // 取消注册
       registerInstance(this)
     }
   })

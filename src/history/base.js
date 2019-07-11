@@ -73,6 +73,7 @@ export class History {
     this.errorCbs = []
   }
 
+  // 在_init的时候，会调用该方法添加cb, cb中会设置依赖的vm的_route属性为当前路由
   listen (cb: Function) {
     this.cb = cb
   }
@@ -107,7 +108,7 @@ export class History {
     // 确认切换路由
     this.confirmTransition(route, () => {
       // 切换路由成功的回调
-      
+
       // 更新路由信息，对组件的_route属性进行赋值，触发组件渲染
       this.updateRoute(route)
       // 添加hashchange监听
@@ -258,7 +259,9 @@ export class History {
         this.pending = null
         onComplete(route)
         if (this.router.app) {
+          // 在根组件重渲染后，执行beforeRouteEnter中next方法中的回调函数
           this.router.app.$nextTick(() => {
+            // 其实是执行poll
             postEnterCbs.forEach(cb => { cb() })
           })
         }
@@ -273,7 +276,10 @@ export class History {
   updateRoute (route: Route) {
     const prev = this.current
     this.current = route
+    // 执行回调，在回调中设置实例vm的_route属性为当前route,因为vm._route是响应式的，
+    // 所以会触发视图的更新
     this.cb && this.cb(route)
+    // 执行全局afterEach路由守卫
     this.router.afterHooks.forEach(hook => {
       hook && hook(route, prev)
     })
@@ -328,15 +334,18 @@ function resolveQueue (
   }
 }
 
-// 从records数组中提取各个阶段的守卫
+// 从records数组中提取各个阶段的所有守卫。
 function extractGuards (
   records: Array<RouteRecord>,
-  name: string,
+  name: string, // 路由钩子名字
   bind: Function,
   reverse?: boolean
 ): Array<?Function> {
+  // def: component, instance: vm, match：routeRecord, key: component->key
   const guards = flatMapComponents(records, (def, instance, match, key) => {
+    // 获取对应的路由钩子
     const guard = extractGuard(def, name)
+    // 绑定钩子的执行上下文为组件实例对象
     if (guard) {
       return Array.isArray(guard)
         ? guard.map(guard => bind(guard, instance, match, key))
@@ -348,7 +357,7 @@ function extractGuards (
   return flatten(reverse ? guards.reverse() : guards)
 }
 
-// 获取指定组件对应的key的值
+// 获取指定组件对应的路由钩子
 function extractGuard (
   def: Object | Function,
   key: string
@@ -378,11 +387,15 @@ function bindGuard (guard: NavigationGuard, instance: ?_Vue): ?NavigationGuard {
   }
 }
 
+// 提取组件中beforeRouteEnter路由守卫
 function extractEnterGuards (
   activated: Array<RouteRecord>,
   cbs: Array<Function>,
   isValid: () => boolean
 ): Array<?Function> {
+  // 绑定该路由钩子的执行上下文与其他的不同。因为该守卫执行时，组件实例还没有被创建。
+  // 但是可以通过传递一个回调给next来访问组件实例。在导航被确认时执行该回调，并传进组件
+  // 实例作为回调的参数
   return extractGuards(activated, 'beforeRouteEnter', (guard, _, match, key) => {
     return bindEnterGuard(guard, match, key, cbs, isValid)
   })
@@ -395,9 +408,16 @@ function bindEnterGuard (
   cbs: Array<Function>,
   isValid: () => boolean
 ): NavigationGuard {
+  // 在iterator中执行的hook,其中的hook就是该函数routeEnterGuard，
+  // next为一个函数，接收开发者传来的参数。
   return function routeEnterGuard (to, from, next) {
+    // 这里的guard才是开发者定义的beforeRouteEnter
+    // 所以这里的cb是开发者在beforeRouteEnter中，调用next回调传来的参数，可以传进一个回调函数，
+    // 该回调函数会在导航确认的时候被执行，并传入组件实例作为参数。
     return guard(to, from, cb => {
+      // 执行next解析当前盗汗钩子
       next(cb)
+      // 收集该回调
       if (typeof cb === 'function') {
         cbs.push(() => {
           // #750
@@ -405,6 +425,7 @@ function bindEnterGuard (
           // the instance may not have been registered at this time.
           // we will need to poll for registration until current route
           // is no longer valid.
+          // 一些了路由组件被套 transition 組件在一些缓动模式下不一定能拿到实例，所以需要使用轮询的方式
           poll(cb, match.instances, key, isValid)
         })
       }
@@ -412,6 +433,7 @@ function bindEnterGuard (
   }
 }
 
+// 使用一个轮询的方法，直到能拿到组件实例时，在去调用cb,并把组件实例作为参数传进
 function poll (
   cb: any, // somehow flow cannot infer this is a function
   instances: Object,

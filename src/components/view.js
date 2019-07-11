@@ -11,6 +11,7 @@ export default {
   name: 'RouterView',
   functional: true,
   props: {
+    // 视图的命名
     name: {
       type: String,
       default: 'default'
@@ -23,8 +24,8 @@ export default {
   //    的数据集合，（一个包含模板相关属性的数据对象）
   //  parent： 父实例对象
   //  props: 父级组件传进来的数据
-  // 
-  
+  //
+
   render (_, { props, children, parent, data }) {
     // used by devtools to display a router-view badge
     data.routerView = true
@@ -56,6 +57,7 @@ export default {
       }
       parent = parent.$parent
     }
+    // 记录该router-view的层级
     data.routerViewDepth = depth
 
     // render previous view if the tree is inactive and kept-alive
@@ -64,7 +66,7 @@ export default {
       return h(cache[name], data, children)
     }
 
-    // 根据当前路径和层级关系，获取到要渲染的路由记录对象 
+    // 根据当前路径和层级关系，获取到要渲染的路由记录对象
     const matched = route.matched[depth]
     // render empty node if no matched route
     if (!matched) {

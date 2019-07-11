@@ -43,7 +43,10 @@ export function pushState (url?: string, replace?: boolean) {
   // DOM Exception 18 where it limits to 100 pushState calls
   const history = window.history
   try {
+    // 使用html5的历史管理api进行历史记录管理
     if (replace) {
+      // 第一个参数：对象，包含用于恢复当前文档状态所需的所有信息，第二个参数：一个可选的标题
+      // 第三个参数：可选的url,表示当前状态的位置
       history.replaceState({ key: _key }, '', url)
     } else {
       _key = genKey()
