@@ -20,7 +20,9 @@ export class HTML5History extends History {
     }
 
     const initLocation = getLocation(this.base)
-    // 使用push/replaceState时，不会触发popstate,只有浏览器动作时，才会触发，但是不同浏览器处理不同
+    // 使用push/replaceState时，不会触发popstate,只有浏览器动作时(前进或后退按钮)，才会触发，
+    // 但是不同浏览器处理不同.触发popstate时，浏览器的地址栏同时会变成历史记录中设置的url,
+    // 然后便可以通过该url来进行路由的跳转，从而实现了单页前进后退进行视图更新的功能。
     window.addEventListener('popstate', e => {
       const current = this.current
 
@@ -48,6 +50,11 @@ export class HTML5History extends History {
   push (location: RawLocation, onComplete?: Function, onAbort?: Function) {
     const { current: fromRoute } = this
     this.transitionTo(location, route => {
+      // 在使用push进行路由跳转之后，我们把路径添加进历史记录中(使用pushstate或者改变location.hash的方式)，
+      // 然后按浏览器的前进或者后退时，浏览器的地址栏会变成我们在历史记录中设置的url，
+      // 同时会触发popstate（或者hashchange）事件，然后我们可以监听该事件，根据地址栏的url来进行路由确认
+      // 跳转，确认跳转之后，设置响应式_route的属性值，触发视图的重新渲染。
+      // 这就是vue-router实现浏览器前进和后退的原理。
       pushState(cleanPath(this.base + route.fullPath))
       handleScroll(this.router, route, fromRoute, false)
       onComplete && onComplete(route)
