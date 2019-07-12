@@ -22,21 +22,26 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
         hasAsync = true
         pending++
 
+        // 异步组件加载成功
         const resolve = once(resolvedDef => {
           if (isESModule(resolvedDef)) {
+            // 如果是es6模块，加载的结果在default中
             resolvedDef = resolvedDef.default
           }
           // save resolved on async factory in case it's used elsewhere
+          // 存储异步组件的解析结果
           def.resolved = typeof resolvedDef === 'function'
             ? resolvedDef
             : _Vue.extend(resolvedDef)
           match.components[key] = resolvedDef
           pending--
+          // 路由匹配到的所有异步组件加载完成才进行下一步
           if (pending <= 0) {
             next()
           }
         })
 
+        // 异步组件加载失败
         const reject = once(reason => {
           const msg = `Failed to resolve async component ${key}: ${reason}`
           process.env.NODE_ENV !== 'production' && warn(false, msg)
@@ -44,21 +49,25 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
             error = isError(reason)
               ? reason
               : new Error(msg)
+            // 终止路由的跳转
             next(error)
           }
         })
 
         let res
         try {
+          // 不同的加载异步组件
           res = def(resolve, reject)
         } catch (e) {
           reject(e)
         }
         if (res) {
+          // Promise加载异步组件
           if (typeof res.then === 'function') {
             res.then(resolve, reject)
           } else {
             // new syntax in Vue 2.3
+            // 高级组件，异步组件工厂函数的格式
             const comp = res.component
             if (comp && typeof comp.then === 'function') {
               comp.then(resolve, reject)
@@ -67,7 +76,7 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
         }
       }
     })
-    
+
     // 如果不是异步组件的话，直接执行next()方法
     if (!hasAsync) next()
   }
@@ -77,7 +86,7 @@ export function flatMapComponents (
   matched: Array<RouteRecord>,
   fn: Function
 ): Array<?Function> {
-  // 
+  //
   return flatten(matched.map(m => {
     // 返回一个数组,数组的每一项为组件中定义的key作为fn参数执行的返回值
     // 传入fn函数的参数：1.视图对应的组件类，2.路由记录对应的组件实例对象，3.路由记录，4.当前key值（路由对应的组件的key）

@@ -166,6 +166,8 @@ export default class VueRouter {
     if (history instanceof HTML5History) {
       history.transitionTo(history.getCurrentLocation())
     } else if (history instanceof HashHistory) {
+      // hash模式要在视图更新后再监听hashchange，而不是在初始化HashHistory的时候，
+      // 为了解决#725
       const setupHashListener = () => {
         history.setupListeners()
       }
@@ -175,7 +177,6 @@ export default class VueRouter {
         setupHashListener
       )
     }
-
     // 添加监听，监听确认路由后在更新路由时执行该监听回调，
     // 在回调中设置组件实例的_route为更新后的路由对象，触发视图更新
     history.listen(route => {
@@ -241,6 +242,7 @@ export default class VueRouter {
     }))
   }
 
+  // 该方法会在router-link中用到
   resolve (
     to: RawLocation,
     current?: Route,

@@ -14,11 +14,13 @@ export class HTML5History extends History {
     const expectScroll = router.options.scrollBehavior
     const supportsScroll = supportsPushState && expectScroll
 
+    // 如果支持滚动，设置滚动： 保存滚动的距离等
     if (supportsScroll) {
       setupScroll()
     }
 
     const initLocation = getLocation(this.base)
+    // 使用push/replaceState时，不会触发popstate,只有浏览器动作时，才会触发，但是不同浏览器处理不同
     window.addEventListener('popstate', e => {
       const current = this.current
 
@@ -32,6 +34,7 @@ export class HTML5History extends History {
 
       this.transitionTo(location, route => {
         if (supportsScroll) {
+          // 如果支持滚动，则处理滚动，到上一次位置或者指定的位置
           handleScroll(router, route, current, true)
         }
       })

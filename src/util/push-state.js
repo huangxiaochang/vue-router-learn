@@ -3,6 +3,7 @@
 import { inBrowser } from './dom'
 import { saveScrollPosition } from './scroll'
 
+// 检查浏览器是否支持html5的pushState api 来管理历史记录
 export const supportsPushState = inBrowser && (function () {
   const ua = window.navigator.userAgent
 
@@ -29,10 +30,12 @@ function genKey (): string {
   return Time.now().toFixed(3)
 }
 
+// 获取state的键
 export function getStateKey () {
   return _key
 }
 
+// 设置state的键
 export function setStateKey (key: string) {
   _key = key
 }

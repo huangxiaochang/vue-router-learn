@@ -111,11 +111,11 @@ export class History {
 
       // 更新路由信息，对组件的_route属性进行赋值，触发组件渲染
       this.updateRoute(route)
-      // 添加hashchange监听
+      // 在hash模式中，添加hashchange监听，因为要避免hashchange事件过早地触发，
+      // 所以要在视图更新之后再添加监听器
       onComplete && onComplete(route)
       // 更新url
       this.ensureURL()
-
       // fire ready cbs once
       // 监听ready的回调只执行一次
       if (!this.ready) {
@@ -125,6 +125,7 @@ export class History {
     }, err => {
       // 切换路由失败的回调
       if (onAbort) {
+        // hash模式会添加hashchange监听
         onAbort(err)
       }
       if (err && !this.ready) {
@@ -180,7 +181,6 @@ export class History {
       deactivated,
       activated
     } = resolveQueue(this.current.matched, route.matched)
-
     // 获取路由钩子函数组成一个队列
     const queue: Array<?NavigationGuard> = [].concat(
       // in-component leave guards

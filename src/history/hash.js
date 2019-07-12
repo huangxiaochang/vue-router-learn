@@ -24,6 +24,8 @@ export class HashHistory extends History {
 
   // this is delayed until the app mounts
   // to avoid the hashchange listener being fired too early
+  // 该方法的调用要延迟到app 挂载的时候，因为要避免hashchange 监听器过早触发
+  // bug#725
   setupListeners () {
     const router = this.router
     const expectScroll = router.options.scrollBehavior

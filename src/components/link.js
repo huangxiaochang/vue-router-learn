@@ -63,15 +63,20 @@ export default {
       ? createRoute(null, location, null, router)
       : route
 
-    // 完全匹配模式或者包含匹配模式
+    // 完全匹配模式或者包含匹配模式，
+    // 即判断当前路由和router-link中绑定的路由来决定是否添加激活的路由类
+    // 因为路由变化的时候，会重新渲染，所以current会变，所以router-link的active class也会
+    // 动态变化
     classes[exactActiveClass] = isSameRoute(current, compareTarget)
     classes[activeClass] = this.exact
       ? classes[exactActiveClass]
       : isIncludedRoute(current, compareTarget)
 
-    // 事件处理
+    // 事件处理回调
     const handler = e => {
+      // guardEvent处理事件的按键情况等
       if (guardEvent(e)) {
+        // 进行路由的跳转
         if (this.replace) {
           router.replace(location)
         } else {
@@ -80,7 +85,7 @@ export default {
       }
     }
 
-    // 处理触发导航的事件类型
+    // 处理触发导航的事件类型，可以绑定多种事件类型
     const on = { click: guardEvent }
     if (Array.isArray(this.event)) {
       this.event.forEach(e => { on[e] = handler })
@@ -88,7 +93,7 @@ export default {
       on[this.event] = handler
     }
 
-    // 创建元素需要附加的数据
+    // 创建元素需要附加的数据, 如类名class等等
     const data: any = {
       class: classes
     }
