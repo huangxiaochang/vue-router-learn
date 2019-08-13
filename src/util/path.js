@@ -1,15 +1,18 @@
 /* @flow */
 
+// 解析base路径，和相对路径，返回正确的路径
 export function resolvePath (
   relative: string,
   base: string,
   append?: boolean
 ): string {
   const firstChar = relative.charAt(0)
+  // 如果是路径部分，直接返回
   if (firstChar === '/') {
     return relative
   }
 
+  // 如果是hash或者query部分，则加上路径部分返回
   if (firstChar === '?' || firstChar === '#') {
     return base + relative
   }
@@ -24,6 +27,7 @@ export function resolvePath (
   }
 
   // resolve relative path
+  // 解析相对路径
   const segments = relative.replace(/^\//, '').split('/')
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i]
@@ -35,6 +39,7 @@ export function resolvePath (
   }
 
   // ensure leading slash
+  // 确保开始是'/'
   if (stack[0] !== '') {
     stack.unshift('')
   }
@@ -42,6 +47,7 @@ export function resolvePath (
   return stack.join('/')
 }
 
+// 解析路径中的hash,query,path部分并返回
 export function parsePath (path: string): {
   path: string;
   query: string;

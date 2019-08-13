@@ -82,14 +82,16 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
   }
 }
 
+// 扁平化路由所匹配的组件: 返回一个数组，数组的每一项为fn函数执行的结果.
+// 传入fn函数的参数：1.具名组件，2.具名router-view实例，3.路由记录，4.router-view Name
 export function flatMapComponents (
   matched: Array<RouteRecord>,
   fn: Function
 ): Array<?Function> {
   //
   return flatten(matched.map(m => {
-    // 返回一个数组,数组的每一项为组件中定义的key作为fn参数执行的返回值
-    // 传入fn函数的参数：1.视图对应的组件类，2.路由记录对应的组件实例对象，3.路由记录，4.当前key值（路由对应的组件的key）
+    // 返回一个数组,数组的每一项为fn函数执行的返回值
+    // 传入fn函数的参数：1.具名组件，2.具名router-view实例，3.路由记录，4.router-view Name
     return Object.keys(m.components).map(key => fn(
       m.components[key],
       m.instances[key],

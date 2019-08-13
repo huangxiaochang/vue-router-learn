@@ -39,6 +39,7 @@ export function normalizeLocation (
     return next
   }
 
+  // parsePath: 返回next.path中相应的hash,query,和path部分
   const parsedPath = parsePath(next.path || '')
   const basePath = (current && current.path) || '/'
   const path = parsedPath.path

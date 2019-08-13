@@ -20,9 +20,9 @@ export class HTML5History extends History {
     }
 
     const initLocation = getLocation(this.base)
-    // 使用push/replaceState时，不会触发popstate,只有浏览器动作时(前进或后退按钮)，才会触发，
-    // 但是不同浏览器处理不同.触发popstate时，浏览器的地址栏同时会变成历史记录中设置的url,
-    // 然后便可以通过该url来进行路由的跳转，从而实现了单页前进后退进行视图更新的功能。
+    // 使用window.history.push/replaceState时，不会触发popstate,只有浏览器动作时(前进或后退按钮),
+    // 或者在js中调用window.history.go/back/forward方法时，才会触发，但是不同浏览器处理不同.触发popstate时，
+    // 浏览器的地址栏同时会变成历史记录中设置的url,然后便可以通过该url来进行路由的跳转，从而实现了单页前进后退进行视图更新的功能。
     window.addEventListener('popstate', e => {
       const current = this.current
 
@@ -44,9 +44,11 @@ export class HTML5History extends History {
   }
 
   go (n: number) {
+    // 调用window.history.go会触发popstate事件，从而进行transitionTo
     window.history.go(n)
   }
 
+  // 提供使用router的push接口进行路由跳转的接口
   push (location: RawLocation, onComplete?: Function, onAbort?: Function) {
     const { current: fromRoute } = this
     this.transitionTo(location, route => {
@@ -61,6 +63,7 @@ export class HTML5History extends History {
     }, onAbort)
   }
 
+  // 提供使用router的replace接口进行路由跳转的接口
   replace (location: RawLocation, onComplete?: Function, onAbort?: Function) {
     const { current: fromRoute } = this
     this.transitionTo(location, route => {
@@ -70,6 +73,8 @@ export class HTML5History extends History {
     }, onAbort)
   }
 
+  // 修改浏览器的地址栏的url,并且往浏览器的历史记录中添加或者替换记录，虽然会修改历史记录，
+  // 但是并不会触发popstate事件，所以不会导致视图的重新transitionTo
   ensureURL (push?: boolean) {
     if (getLocation(this.base) !== this.current.fullPath) {
       const current = cleanPath(this.base + this.current.fullPath)
@@ -77,6 +82,7 @@ export class HTML5History extends History {
     }
   }
 
+  // 获取目前的location,不包含base部分，包含hash和search部分
   getCurrentLocation (): string {
     return getLocation(this.base)
   }

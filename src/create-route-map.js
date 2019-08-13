@@ -1,7 +1,7 @@
 /* @flow */
 
 import Regexp from 'path-to-regexp'
-import { cleanPath } from './util/path'
+import { cleanPath } from './util/path' // cleanPath把路径中的所有'//' -> '/'
 import { assert, warn } from './util/warn'
 
 // 主要进行路径的规范化
@@ -72,14 +72,16 @@ function addRouteRecord (
     )
   }
 
-  // 规范化path
+  // 获取开发者配置的路径到正则表达式的配置项。详情可查vue-router路由的高级匹配模式
   const pathToRegexpOptions: PathToRegexpOptions = route.pathToRegexpOptions || {}
+  // 规范化path, 即子路径会加上路径,严格模式会去掉最后的'/',把路径中所有的'//' -> '/'
   const normalizedPath = normalizePath(
     path,
     parent,
     pathToRegexpOptions.strict
   )
 
+  // 匹配规则是否是大小写敏感
   if (typeof route.caseSensitive === 'boolean') {
     pathToRegexpOptions.sensitive = route.caseSensitive
   }
@@ -87,19 +89,20 @@ function addRouteRecord (
   // 路由记录对象
   const record: RouteRecord = {
     path: normalizedPath,
+    // compileRouteRegex： 路由匹配的正则表达式，(把路径装化成对应的匹配正则表达式)
     regex: compileRouteRegex(normalizedPath, pathToRegexpOptions),
     components: route.components || { default: route.component }, // 命名视图组件：viewName: component
-    instances: {}, // 收集vm实例
+    instances: {}, // 用来注册路由匹配对应的router-view vm实例: viewName: router-view
     name,
     parent, // 用于子路由,指向父级record
     matchAs, // 用于路由别名，值为record.path或者/
-    redirect: route.redirect,
-    beforeEnter: route.beforeEnter,
-    meta: route.meta || {},
-    // props的值可能为true/false, {}, function
+    redirect: route.redirect, // 重定向的配置，可以是路径字符串，对象，函数
+    beforeEnter: route.beforeEnter, // 路由配置中的beforeEnter守卫
+    meta: route.meta || {}, // 路由配置中的路由元信息
+    // props的值可能为true/false, {}, function, 最终规范化成{},或者viewName: props
     props: route.props == null
       ? {}
-      : route.components
+      : route.components // 如果是具名组件
         ? route.props
         : { default: route.props }
   }
@@ -151,12 +154,13 @@ function addRouteRecord (
     })
   }
 
+  // 添加路径映射路由记录
   if (!pathMap[record.path]) {
     pathList.push(record.path)
     pathMap[record.path] = record
   }
 
-  // 命名路由添加路由记录
+  // 命名路由添加名字映射路由记录
   if (name) {
     if (!nameMap[name]) {
       nameMap[name] = record
@@ -185,6 +189,7 @@ function compileRouteRegex (path: string, pathToRegexpOptions: PathToRegexpOptio
 
 // 规范化路径path，如严格模式去掉路径最后的'/',如果子路径不是以/开头，则加上父路径
 function normalizePath (path: string, parent?: RouteRecord, strict?: boolean): string {
+  // 如果不是严格模式,会去掉路径最后面的'/'
   if (!strict) path = path.replace(/\/$/, '')
   if (path[0] === '/') return path
   if (parent == null) return path

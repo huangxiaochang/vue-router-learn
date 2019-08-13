@@ -29,10 +29,11 @@ export default {
   render (_, { props, children, parent, data }) {
     // used by devtools to display a router-view badge
     data.routerView = true
-
     // directly use parent context's createElement() function
     // so that components rendered by router-view can resolve named slots
+    // parent, 该router-view所在的父级组件vm
     const h = parent.$createElement
+    // 命名router-view的name属性值
     const name = props.name
     // 由于我们把根 Vue 实例的 _route 属性定义成响应式的，访问 parent.$route，会触发getter
     // 收集了渲染函数订阅者，当执行完router.transitionTo 后，修改 app._route 的时候，
@@ -75,19 +76,15 @@ export default {
       return h()
     }
 
-    // 获取匹配到的路由记录对应的组件并进行缓存
+    // 获取匹配到的路由记录对应的组件并进行缓存,如果是具名router-view,获取的是相对应的组件
     const component = cache[name] = matched.components[name]
 
     // attach instance registration hook
     // this will be called in the instance's injected lifecycle hooks
-    // 定义了一个注册路由实例的方法，该方法会在实例注入的beforeCreate钩子函数中被
-    // 调用
+    // 在匹配的路由对象中的instances属性中注册router-view,因为可能有多个具名router-view
     data.registerRouteInstance = (vm, val) => {
       // val: vm/undefined
       // val could be undefined for unregistration
-      // val 为undefined的时候，为取消注册。会在destory钩子函数中调用registerInstance(this)没有传val
-      // 即val不为undefined时，为注册，否者为取消注册
-      // name为命名view的name ID
       const current = matched.instances[name]
       if (
         (val && current !== vm) ||
@@ -100,6 +97,7 @@ export default {
     // also register instance in prepatch hook
     // in case the same component instance is reused across different routes
     // 在prepatch钩子中注册组件实例，目的，不同路由可能使用同一组件，便于组件的复用
+    // data.hook为节点的生命周期的钩子函数，即节点的创建，初始化，插入，销毁等。
     ;(data.hook || (data.hook = {})).prepatch = (_, vnode) => {
       matched.instances[name] = vnode.componentInstance
     }

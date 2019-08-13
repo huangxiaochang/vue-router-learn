@@ -88,8 +88,8 @@ export default class VueRouter {
   afterHooks: Array<?AfterNavigationHook>;
 
   constructor (options: RouterOptions = {}) {
-    this.app = null
-    this.apps = []
+    this.app = null // 保存根vm实例(该路由实例对象第一次传进vm实例对象)
+    this.apps = [] // 用于收集所有传进该路由实例的vm实例
     this.options = options // 开发者的路由配置信息
     this.beforeHooks = []
     this.resolveHooks = []
@@ -133,6 +133,7 @@ export default class VueRouter {
     current?: Route,
     redirectedFrom?: Location
   ): Route {
+    // 返回匹配的路由对象
     return this.matcher.match(raw, current, redirectedFrom)
   }
 
@@ -141,7 +142,7 @@ export default class VueRouter {
     return this.history && this.history.current
   }
 
-  // 在组件的beforeCreate钩子函数中会执行该init方法，传进来的参数为Vue实例对象
+  // 在根组件的beforeCreate钩子函数中会执行该init方法，传进来的参数为Vue实例对象
   init (app: any /* Vue component instance */) {
     process.env.NODE_ENV !== 'production' && assert(
       install.installed,
@@ -149,11 +150,11 @@ export default class VueRouter {
       `before creating root instance.`
     )
 
-    // 使用apps收集Vue实例对象
+    // 使用apps收集所有把该路由实例router传进vm实例进行初始化的vm, 即创建vm时，有传进该router.
+    // 一般spa,只会在根vm中传进router选项
     this.apps.push(app)
-
     // main app already initialized.
-    // 只在根vm中进行初始化
+    // 只在根vm中进行下面的初始化
     if (this.app) {
       return
     }
@@ -164,7 +165,7 @@ export default class VueRouter {
 
     // 根据不同的模式，进行路由的跳转
     if (history instanceof HTML5History) {
-      history.transitionTo(history.getCurrentLocation())
+      history.transitionTo(history.getCurrentLocation()/* 历史模式下为去除base后的location,包含hash和search*/)
     } else if (history instanceof HashHistory) {
       // hash模式要在视图更新后再监听hashchange，而不是在初始化HashHistory的时候，
       // 为了解决#725
@@ -172,12 +173,13 @@ export default class VueRouter {
         history.setupListeners()
       }
       history.transitionTo(
-        history.getCurrentLocation(),
-        setupHashListener,
-        setupHashListener
+        history.getCurrentLocation(), // hash模式下为location的hash部分
+        setupHashListener, // onComplete
+        setupHashListener // onAbort
       )
     }
-    // 添加监听，监听确认路由后在更新路由时执行该监听回调，
+
+    // 添加监听，监听确认路由后在更新路由时(updateRoute)执行该监听回调，
     // 在回调中设置组件实例的_route为更新后的路由对象，触发视图更新
     history.listen(route => {
       this.apps.forEach((app) => {
@@ -186,6 +188,7 @@ export default class VueRouter {
     })
   }
 
+  // 全局的路由守卫
   beforeEach (fn: Function): Function {
     return registerHook(this.beforeHooks, fn)
   }
@@ -226,6 +229,8 @@ export default class VueRouter {
     this.go(1)
   }
 
+  // 获取路由匹配到的所有组件，因为可能拥有具名router-view组件,所以存在多个组件的可能，
+  // 所以返回值是一个数组
   getMatchedComponents (to?: RawLocation | Route): Array<any> {
     const route: any = to
       ? to.matched
@@ -275,6 +280,7 @@ export default class VueRouter {
     }
   }
 
+  // 返回addRoutes方法，用于动态添加路由
   addRoutes (routes: Array<RouteConfig>) {
     this.matcher.addRoutes(routes)
     if (this.history.current !== START) {
@@ -283,6 +289,7 @@ export default class VueRouter {
   }
 }
 
+// 用于注册路由钩子
 function registerHook (list: Array<any>, fn: Function): Function {
   list.push(fn)
   // 返回一个函数用于注销注册的钩子函数

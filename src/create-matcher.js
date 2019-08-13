@@ -19,10 +19,10 @@ export type Matcher = {
 // addRouters方法作用为在路由列表，path路由映射表，name路由映射表中添加路由记录
 // match方法的作用是根据传进来的raw，当前的路径和重定向计算，匹配，返回一个路由对象
 export function createMatcher (
-  routes: Array<RouteConfig>,
+  routes: Array<RouteConfig>, // 开发者的路由配置routes选项
   router: VueRouter
 ): Matcher {
-  // 创建路由列表和路由映射表
+  // 创建路由路径列表和路由路径，路由名称到路由记录映射表
   const { pathList, pathMap, nameMap } = createRouteMap(routes)
 
   // 提供动态添加路由接口
@@ -31,15 +31,15 @@ export function createMatcher (
     createRouteMap(routes, pathList, pathMap, nameMap)
   }
 
-  // 路由匹配，根据传进来的raw location，当前的路由对象，重定向来源计算返回路由对象
+  // 路由匹配: 返回匹配的路由对象
   function match (
-    raw: RawLocation,
-    currentRoute?: Route,
-    redirectedFrom?: Location
+    raw: RawLocation, // 传进来的raw location
+    currentRoute?: Route, // 当前的路由对象
+    redirectedFrom?: Location // 重定向来源
   ): Route {
     // 序列化url，即获取url中hash，query，path，name
     // 如果raw为有name属性的对象，直接不用处理
-    const location = normalizeLocation(raw, currentRoute, false, router)
+    const location = normalizeLocation(raw, currentRoute, false /* append*/, router)
     const { name } = location
     if (name) {
       // 如果是具名路由

@@ -25,6 +25,8 @@ export function install (Vue) {
 
   const registerInstance = (vm, callVal) => {
     let i = vm.$options._parentVnode
+    // registerRouteInstance该方法会在router-view组件中定义, 即只会在router-view组件的beforeCreate钩子中
+    // 调用该方法
     if (isDef(i) && isDef(i = i.data) && isDef(i = i.registerRouteInstance)) {
       // data.registerRouteInstance在router-view中定义，用于在匹配的路由记录中的instances属性中
       // 注册和取消注册组件实例对象(router-view组件实例)。
@@ -38,8 +40,9 @@ export function install (Vue) {
       if (isDef(this.$options.router)) {
         // 只有在根Vue实例(new Vue())中才会执行,因为在只有在创建根实例时，才传进router
         this._routerRoot = this
+        // 路由实例对象，即传进给组件之前，已经进行实例化(new 创建)
         this._router = this.$options.router
-        // 初始化路由
+        // 初始化路由实例对象：路由确认跳转，监听当前路由变化，改变vm的是_route的值
         this._router.init(this)
         // 设置响应式属性_route,会在确认路由跳转之后，重新设置_route，触发依赖，进行视图的更新
         // (收集依赖是在router-view组件中访问_route属性的时候，收集了render watcher)
@@ -48,7 +51,8 @@ export function install (Vue) {
         // 用于router-view层级判断, 对于子组件来说，_routerRoot指向的都是根实例对象vm
         this._routerRoot = (this.$parent && this.$parent._routerRoot) || this
       }
-      // 注册路由实例
+      // 注册路由实例: 即在当前路由实例所匹配路由记录对象matched.instances注册对应层级的router-view，
+      // 键为router-view的name属性，默认router-view键为default
       registerInstance(this, this)
     },
     destroyed () {

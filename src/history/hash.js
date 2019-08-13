@@ -54,6 +54,7 @@ export class HashHistory extends History {
     })
   }
 
+  // 提供使用router的push接口进行路由跳转的接口
   push (location: RawLocation, onComplete?: Function, onAbort?: Function) {
     const { current: fromRoute } = this
     this.transitionTo(location, route => {
@@ -63,6 +64,7 @@ export class HashHistory extends History {
     }, onAbort)
   }
 
+  // 提供使用router的replace接口进行路由跳转的接口
   replace (location: RawLocation, onComplete?: Function, onAbort?: Function) {
     const { current: fromRoute } = this
     this.transitionTo(location, route => {
@@ -73,15 +75,16 @@ export class HashHistory extends History {
   }
 
   go (n: number) {
+    // 调用window.history.go会触发popstate/hashchange事件，从而进行transitionTo
     window.history.go(n)
   }
 
-  // push：Boolean,代表是添加还是替换
-  // this.current为当前的路由对象
+  // 修改地址栏的url，并进行历史记录的管理：添加或者替换，虽然会修改历史记录，
+  // 但是并不会触发popstate事件，所以不会导致视图的重新transitionTo
   ensureURL (push?: boolean) {
     const current = this.current.fullPath
     if (getHash() !== current) {
-      // 修改地址栏的url
+      // 修改地址栏的url,并进行历史记录管理
       push ? pushHash(current) : replaceHash(current)
     }
   }

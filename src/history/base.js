@@ -66,11 +66,13 @@ export class History {
     this.base = normalizeBase(base)
     // start with a route object that stands for "nowhere"
     this.current = START
-    this.pending = null
+    this.pending = null // 目前正在需要跳转确认的路由对象
+    // 是否已经进行了初始导航，因为只有在初始导航时，才会执行readyCbs或readyErrorCbs中的回调
+    // 在进行初始导航之后会设置成true
     this.ready = false
-    this.readyCbs = []
-    this.readyErrorCbs = []
-    this.errorCbs = []
+    this.readyCbs = [] // 路由完成初始导航时调用的回调
+    this.readyErrorCbs = [] // 2.4+, 初始化路由解析运行出错(如：解析异步组件出错)
+    this.errorCbs = [] // 路由导航过程中出错的回调
   }
 
   // 在_init的时候，会调用该方法添加cb, cb中会设置依赖的vm的_route属性为当前路由
@@ -111,25 +113,31 @@ export class History {
 
       // 更新路由信息，对组件的_route属性进行赋值，触发组件渲染
       this.updateRoute(route)
+      // 执行路由跳转成功的回调，如滚动滚动条等等
       // 在hash模式中，添加hashchange监听，因为要避免hashchange事件过早地触发，
       // 所以要在视图更新之后再添加监听器
       onComplete && onComplete(route)
-      // 更新url
+      // 更新url：更新浏览器地址栏的location，并且进行浏览器的历史记录管理，添加或者替换历史记录，
+      // 虽然会修改历史记录，但是并不会触发popstate/hashchange事件，所以不会导致重复transitionTo，因为
+      // popstate/hashchange事件只有点击浏览器的前/后退按钮时，才会触发
       this.ensureURL()
       // fire ready cbs once
       // 监听ready的回调只执行一次
       if (!this.ready) {
         this.ready = true
+        // 执行路由初始导航成功的回调
         this.readyCbs.forEach(cb => { cb(route) })
       }
     }, err => {
       // 切换路由失败的回调
       if (onAbort) {
-        // hash模式会添加hashchange监听
+        // 执行跳转失败的回调
+        // hash模式的初始跳转会添加hashchange监听
         onAbort(err)
       }
       if (err && !this.ready) {
         this.ready = true
+        // 执行初始化路由解析运行出错的回调
         this.readyErrorCbs.forEach(cb => { cb(err) })
       }
     })
@@ -195,7 +203,7 @@ export class History {
       // in-config enter guards
       // 获取在激活的路由配置中的beforeEnter
       activated.map(m => m.beforeEnter),
-      // async components解析异步路由组件
+      // async components解析激活异步路由组件
       resolveAsyncComponents(activated)
     )
 
@@ -223,6 +231,7 @@ export class History {
             ))
           ) {
             // next('/') or next({ path: '/' }) -> redirect
+            // 重定向
             abort()
             if (typeof to === 'object' && to.replace) {
               this.replace(to)
@@ -236,6 +245,7 @@ export class History {
           }
         })
       } catch (e) {
+        // 如果在执行路由钩子时，发生错误，这终止跳转
         abort(e)
       }
     }
@@ -335,17 +345,18 @@ function resolveQueue (
 }
 
 // 从records数组中提取各个阶段的所有守卫。
+// 这些钩子函数都绑定了相应的执行上下文环境
 function extractGuards (
   records: Array<RouteRecord>,
   name: string, // 路由钩子名字
   bind: Function,
   reverse?: boolean
 ): Array<?Function> {
-  // def: component, instance: vm, match：routeRecord, key: component->key
+  // def: component, instance: router-view:vm, match：routeRecord, key: routerViewName
   const guards = flatMapComponents(records, (def, instance, match, key) => {
-    // 获取对应的路由钩子
+    // 获取组件中对应的路由钩子
     const guard = extractGuard(def, name)
-    // 绑定钩子的执行上下文为组件实例对象
+    // 绑定钩子的执行上下文为相应的router-view实例对象
     if (guard) {
       return Array.isArray(guard)
         ? guard.map(guard => bind(guard, instance, match, key))
@@ -357,7 +368,7 @@ function extractGuards (
   return flatten(reverse ? guards.reverse() : guards)
 }
 
-// 获取指定组件对应的路由钩子
+// 获取指定组件对应名字的路由钩子
 function extractGuard (
   def: Object | Function,
   key: string
@@ -369,16 +380,17 @@ function extractGuard (
   return def.options[key]
 }
 
-// 获取所有失活组件中定义的beforeRouteLeave钩子函数
+// 获取所有失活组件中定义的beforeRouteLeave钩子函数, 并绑定它的执行上下文环境为相应的router-view实例
 function extractLeaveGuards (deactivated: Array<RouteRecord>): Array<?Function> {
-  return extractGuards(deactivated, 'beforeRouteLeave', bindGuard, true)
+  return extractGuards(deactivated, 'beforeRouteLeave', bindGuard, true /* reverse*/)
 }
 
+// 获取所有更新的组件中beforeRouteUpdate钩子函数，并绑定该钩子函数的执行上下文为相应的router-view实例
 function extractUpdateHooks (updated: Array<RouteRecord>): Array<?Function> {
   return extractGuards(updated, 'beforeRouteUpdate', bindGuard)
 }
 
-// 把路由钩子函数的执行上下文为Vue组件实例
+// 把路由钩子函数的执行上下文为相应的router-view实例
 function bindGuard (guard: NavigationGuard, instance: ?_Vue): ?NavigationGuard {
   if (instance) {
     return function boundRouteGuard () {
@@ -401,6 +413,7 @@ function extractEnterGuards (
   })
 }
 
+// 绑定beforeRouteEnter钩子函数的执行上下文环境
 function bindEnterGuard (
   guard: NavigationGuard,
   match: RouteRecord,
