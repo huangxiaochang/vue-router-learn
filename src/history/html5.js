@@ -14,7 +14,7 @@ export class HTML5History extends History {
     const expectScroll = router.options.scrollBehavior
     const supportsScroll = supportsPushState && expectScroll
 
-    // 如果支持滚动，设置滚动： 保存滚动的距离等
+    // 如果支持滚动，设置滚动：保存滚动的距离等
     if (supportsScroll) {
       setupScroll()
     }

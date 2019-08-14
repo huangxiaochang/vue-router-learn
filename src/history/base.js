@@ -203,7 +203,7 @@ export class History {
       // in-config enter guards
       // 获取在激活的路由配置中的beforeEnter
       activated.map(m => m.beforeEnter),
-      // async components解析激活异步路由组件
+      // 创建解析async components的函数
       resolveAsyncComponents(activated)
     )
 
@@ -255,11 +255,11 @@ export class History {
     // 的时候，将会执行执行queue往下继续执行，即终止路由的跳转，因为只有执行完queue，
     // 才会调用执行完毕的回调，才会在回调中执行路由的更新和组件的渲染
     runQueue(queue, iterator, () => {
-      const postEnterCbs = []
+      const postEnterCbs = [] // 用于收集在beforeRouteEnter钩子中传递给next函数的回调
       const isValid = () => this.current === route
       // wait until async components are resolved before
       // extracting in-component enter guards
-      // 等待异步组件加载完成，获取异步组件内的beforeRouteEnter和全局beforeResolve
+      // 等待异步组件加载完成，获取异步组件内的beforeRouteEnter和全局beforeResolve(2.5+)
       const enterGuards = extractEnterGuards(activated, postEnterCbs, isValid)
       const queue = enterGuards.concat(this.router.resolveHooks)
       runQueue(queue, iterator, () => {
@@ -421,16 +421,15 @@ function bindEnterGuard (
   cbs: Array<Function>,
   isValid: () => boolean
 ): NavigationGuard {
-  // 在iterator中执行的hook,其中的hook就是该函数routeEnterGuard，
-  // next为一个函数，接收开发者传来的参数。
+  // 在iterator中执行的hook,其中的hook就是该函数routeEnterGuard
   return function routeEnterGuard (to, from, next) {
     // 这里的guard才是开发者定义的beforeRouteEnter
     // 所以这里的cb是开发者在beforeRouteEnter中，调用next回调传来的参数，可以传进一个回调函数，
     // 该回调函数会在导航确认的时候被执行，并传入组件实例作为参数。
     return guard(to, from, cb => {
-      // 执行next解析当前盗汗钩子
+      // 执行next，继续下一步的异步队列的异步函数的执行
       next(cb)
-      // 收集该回调
+      // 收集该回调，会在导航确认前被调用
       if (typeof cb === 'function') {
         cbs.push(() => {
           // #750
