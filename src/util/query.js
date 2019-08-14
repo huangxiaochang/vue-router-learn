@@ -4,7 +4,7 @@ import { warn } from './warn'
 
 const encodeReserveRE = /[!'()*]/g
 const encodeReserveReplacer = c => '%' + c.charCodeAt(0).toString(16)
-const commaRE = /%2C/g
+const commaRE = /%2C/g // 匹配空格
 
 // fixed encodeURIComponent which is more conformant to RFC3986:
 // - escapes [!'()*]
@@ -34,6 +34,7 @@ export function resolveQuery (
   return parsedQuery
 }
 
+// 把路径的search部分的字符串形式转成对象的形式
 function parseQuery (query: string): Dictionary<string> {
   const res = {}
 
@@ -62,6 +63,7 @@ function parseQuery (query: string): Dictionary<string> {
   return res
 }
 
+// 把路径中search部分解析成字符串的形式
 export function stringifyQuery (obj: Dictionary<string>): string {
   const res = obj ? Object.keys(obj).map(key => {
     const val = obj[key]

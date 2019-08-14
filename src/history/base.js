@@ -266,6 +266,7 @@ export class History {
         if (this.pending !== route) {
           return abort()
         }
+        // 路由被确认
         this.pending = null
         onComplete(route)
         if (this.router.app) {
@@ -445,7 +446,7 @@ function bindEnterGuard (
   }
 }
 
-// 使用一个轮询的方法，直到能拿到组件实例时，在去调用cb,并把组件实例作为参数传进
+// 使用一个轮询的方法，直到能拿到组件实例时，再去调用cb,并把组件实例作为参数传进
 function poll (
   cb: any, // somehow flow cannot infer this is a function
   instances: Object,

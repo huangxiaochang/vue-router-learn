@@ -12,6 +12,7 @@ export function createRoute (
   redirectedFrom?: ?Location,
   router?: VueRouter
 ): Route {
+  // 开发者可以通过stringifyQuery构建选项来覆盖框架默认的行为
   const stringifyQuery = router && router.options.stringifyQuery
 
   // 拷贝参数

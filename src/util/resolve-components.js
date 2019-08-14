@@ -17,7 +17,7 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
       // we want to halt the navigation until the incoming component has been
       // resolved.
       // 如果它是一个函数并且没有cid属性的话，我们假定它是一个异步组件解析函数，
-      // 那么我们就不使用Vue默认的异步解析机制，因为我们希望暂停导航知道都有包含的组件解析完成
+      // 那么我们就不使用Vue默认的异步解析机制，因为我们希望暂停导航直到所有包含的组件解析完成
       if (typeof def === 'function' && def.cid === undefined) {
         hasAsync = true
         pending++
@@ -56,7 +56,7 @@ export function resolveAsyncComponents (matched: Array<RouteRecord>): Function {
 
         let res
         try {
-          // 不同的加载异步组件
+          // 普通的加载异步组件
           res = def(resolve, reject)
         } catch (e) {
           reject(e)
