@@ -6,7 +6,13 @@ import { cleanPath } from '../util/path'
 import { START } from '../util/route'
 import { setupScroll, handleScroll } from '../util/scroll'
 import { pushState, replaceState, supportsPushState } from '../util/push-state'
-
+/*
+  history模式利用了window.history.pushState api来完成url的跳转而无需重新加载页面，但是当用户直接
+  访问某一个url(或者刷新时)，浏览器就会去请求和加载url对应的页面(后端对于的页面)，但是由于该url是前端定义的，所以并不能
+  正确地加载到该url对应的页面，所以会出现404的情况，所以该模式需要后端进行配合，即如果url匹配不到
+  任何资源时，则应该返回index.html。由于代码中的push，go等方法，最后都是使用window.history.pushState
+  api来改变地址栏的url，所以并不会引起页面的重新加载，所有不会出现404的情况。
+ */
 export class HTML5History extends History {
   constructor (router: Router, base: ?string) {
     super(router, base)
@@ -48,7 +54,7 @@ export class HTML5History extends History {
     window.history.go(n)
   }
 
-  // 提供使用router的push接口进行路由跳转的接口
+  // 提供使用router的push接口进行路由跳转的接口,同时添加一条历史记录
   push (location: RawLocation, onComplete?: Function, onAbort?: Function) {
     const { current: fromRoute } = this
     this.transitionTo(location, route => {
@@ -63,7 +69,7 @@ export class HTML5History extends History {
     }, onAbort)
   }
 
-  // 提供使用router的replace接口进行路由跳转的接口
+  // 提供使用router的replace接口进行路由跳转的接口，同时替换一条历史记录
   replace (location: RawLocation, onComplete?: Function, onAbort?: Function) {
     const { current: fromRoute } = this
     this.transitionTo(location, route => {

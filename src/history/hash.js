@@ -143,6 +143,8 @@ function pushHash (path) {
   if (supportsPushState) {
     pushState(getUrl(path))
   } else {
+    // 使用window.location.hash时，会操作；浏览器历史记录，但是不会引起页面的刷新，同时会改变浏览器
+    // 地址栏的url
     window.location.hash = path
   }
 }
@@ -156,3 +158,4 @@ function replaceHash (path) {
     window.location.replace(getUrl(path))
   }
 }
+
