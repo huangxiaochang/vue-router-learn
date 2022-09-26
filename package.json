@@ -70,7 +70,7 @@
     "flow-bin": "^0.66.0",
     "jasmine": "2.8.0",
     "lint-staged": "^8.1.0",
-    "nightwatch": "^0.9.20",
+    "nightwatch": "^2.3.9",
     "nightwatch-helpers": "^1.0.0",
     "path-to-regexp": "^1.7.0",
     "phantomjs-prebuilt": "^2.1.16",
